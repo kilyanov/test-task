@@ -6,18 +6,17 @@ namespace app\modules\v1\controllers;
 
 use app\common\BaseApiController;
 use app\common\rbac\CollectionRolls;
-use app\modules\v1\actions\category\Delete;
-use app\modules\v1\actions\category\Create;
-use app\modules\v1\actions\category\Index;
-use app\modules\v1\actions\category\Update;
-use app\modules\v1\filters\category\CategoryApplicationSearch;
-use app\modules\v1\form\category\CategoryForm;
+use app\modules\v1\actions\categoryUser\Create;
+use app\modules\v1\actions\categoryUser\Delete;
+use app\modules\v1\actions\categoryUser\Index;
+use app\modules\v1\filters\category\CategoryUserSearch;
+use app\modules\v1\form\category\CategoryUserForm;
 use yii\filters\AccessControl;
 use yii\rest\OptionsAction;
 
-class CategoryController extends BaseApiController
+class CategoryUserController extends BaseApiController
 {
-    public string $modelClass = CategoryApplicationSearch::class;
+    public string $modelClass = CategoryUserSearch::class;
 
     public function behaviors(): array
     {
@@ -39,8 +38,6 @@ class CategoryController extends BaseApiController
         return [
             'index' => ['GET'],
             'create' => ['POST'],
-            'update' => ['PUT'],
-            'delete' => ['DELETE'],
         ];
     }
 
@@ -56,15 +53,11 @@ class CategoryController extends BaseApiController
             ],
             'create' => [
                 'class' => Create::class,
-                'modelClass' => CategoryForm::class
-            ],
-            'update' => [
-                'class' => Update::class,
-                'modelClass' => CategoryForm::class
+                'modelClass' => CategoryUserForm::class
             ],
             'delete' => [
                 'class' => Delete::class,
-                'modelClass' => CategoryForm::class
+                'modelClass' => $this->modelClass
             ],
 
         ];

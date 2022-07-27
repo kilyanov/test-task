@@ -49,4 +49,21 @@ return [
         ],
         'pluralize' => false,
     ],
+    [
+        'class' => UrlRule::class,
+        'controller' => 'v1/category-user',
+        'patterns' => [
+            'GET' => 'index',
+            'OPTIONS' => 'options',
+            'GET index' => 'index',
+            'OPTIONS index' => 'options',
+            'POST' => 'create',
+            'DELETE {id}' => 'delete',
+            'OPTIONS {id}' => 'options',
+        ],
+        'tokens' => [
+            '{id}' => '<id:[a-f0-9-]{36}>',
+        ],
+        'pluralize' => false,
+    ],
 ];
