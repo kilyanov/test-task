@@ -1,7 +1,9 @@
 <?php
 
 return [
-    'adminEmail' => 'admin@example.com',
-    'senderEmail' => 'noreply@example.com',
-    'senderName' => 'Example.com mailer',
+    'token_access_expire' => 24 * 60 * 60,
+    'token_refresh_expire' => 10 * 24 * 60 * 60,
+    'adminEmail' => 'lsd-7d@yandex.ru',
+    'senderEmail' => 'noreplay@onyxgrp.ru',
+    'senderName' => 'Admin mailer',
 ];

@@ -1,104 +1,150 @@
 <?php
 
+declare(strict_types=1);
+
 namespace app\models;
 
-class User extends \yii\base\BaseObject implements \yii\web\IdentityInterface
+use app\common\Model;
+use Carbon\CarbonImmutable;
+use Lcobucci\Clock\SystemClock;
+use Yii;
+use yii\base\Exception;
+use yii\db\ActiveQuery;
+use yii\db\ActiveRecord;
+use yii\web\IdentityInterface;
+
+/**
+ * This is the model class for table "{{%user}}".
+ *
+ * @property string $id
+ * @property string $username Логин
+ * @property string $auth_key Ключ
+ * @property string $password_hash Пароль
+ * @property string|null $password_reset_token Токен для сброса пароля
+ * @property string $email Email
+ * @property string|null $verification_token Токен регистрации
+ * @property string $status
+ * @property string $createdAt
+ * @property string $updatedAt
+ * @property string|null $deletedAt
+ *
+ */
+class User extends Model implements IdentityInterface
 {
-    public $id;
-    public $username;
-    public $password;
-    public $authKey;
-    public $accessToken;
+    public const STATUS_BLOCK = 'block';
+    public const STATUS_ACTIVE = 'active';
+    public const STATUS_NOT_ACTIVE = 'not_active';
 
-    private static $users = [
-        '100' => [
-            'id' => '100',
-            'username' => 'admin',
-            'password' => 'admin',
-            'authKey' => 'test100key',
-            'accessToken' => '100-token',
-        ],
-        '101' => [
-            'id' => '101',
-            'username' => 'demo',
-            'password' => 'demo',
-            'authKey' => 'test101key',
-            'accessToken' => '101-token',
-        ],
-    ];
-
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function findIdentity($id)
+    public static function tableName(): string
     {
-        return isset(self::$users[$id]) ? new static(self::$users[$id]) : null;
+        return '{{%user}}';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function findIdentityByAccessToken($token, $type = null)
+    public function rules(): array
     {
-        foreach (self::$users as $user) {
-            if ($user['accessToken'] === $token) {
-                return new static($user);
-            }
+        return [
+            [['username', 'password_hash', 'email',], 'required'],
+            [['createdAt', 'updatedAt', 'deletedAt'], 'safe'],
+            [['username', 'password_hash', 'password_reset_token', 'email', 'verification_token', 'status', ], 'string', 'max' => 255],
+            [['auth_key'], 'string', 'max' => 32],
+            [['username'], 'unique'],
+            [['email'], 'unique'],
+        ];
+    }
+
+    public function attributeLabels(): array
+    {
+        return [
+            'id' => 'ID',
+            'username' => 'Логин',
+            'auth_key' => 'Ключ',
+            'password_hash' => 'Пароль',
+            'password_reset_token' => 'Токен для сброса пароля',
+            'email' => 'Email',
+            'verification_token' => 'Токен регистрации',
+            'status' => 'Статус',
+            'createdAt' => 'Created At',
+            'updatedAt' => 'Updated At',
+            'deletedAt' => 'Deleted At',
+        ];
+    }
+
+    public static function findIdentity($id): User|IdentityInterface|null
+    {
+        return static::findOne(['id' => $id, 'status' => self::STATUS_ACTIVE]);
+    }
+
+    public static function findIdentityByAccessToken($token, $type = Token::TYPE_ACCESS_TOKEN): array|ActiveRecord|IdentityInterface|null
+    {
+        if ($type === 'yii\filters\auth\HttpBearerAuth') {
+            $type = Token::TYPE_ACCESS_TOKEN;
         }
-
-        return null;
+        return static::find()
+            ->joinWith('tokens t', false)
+            ->andWhere([
+                't.token' => $token,
+                't.type' => $type,
+            ])
+            ->andWhere([
+                    '>',
+                    't.expiredAt',
+                    CarbonImmutable::instance(SystemClock::fromUTC()->now())->toDateTimeString(),
+                ]
+            )
+            ->one();
     }
 
-    /**
-     * Finds user by username
-     *
-     * @param string $username
-     * @return static|null
-     */
-    public static function findByUsername($username)
-    {
-        foreach (self::$users as $user) {
-            if (strcasecmp($user['username'], $username) === 0) {
-                return new static($user);
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getId()
+    public function getId(): string
     {
         return $this->id;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getAuthKey()
+    public function getAuthKey(): string
     {
-        return $this->authKey;
+        return $this->auth_key;
+    }
+
+    public function validateAuthKey($authKey): bool
+    {
+        return $this->getAuthKey() === $authKey;
+    }
+
+    public function validatePassword(string $password): bool
+    {
+        return Yii::$app->security->validatePassword($password, $this->password_hash);
+    }
+
+    public static function findByUsernameOrEmail(string $data): ?ActiveRecord
+    {
+        return self::find()
+            ->where([
+                'or',
+                ['username' => $data],
+                ['email' => $data]
+            ])
+            ->andWhere(['status' => self::STATUS_ACTIVE])
+            ->one();
     }
 
     /**
-     * {@inheritdoc}
+     * @throws Exception
      */
-    public function validateAuthKey($authKey)
+    public function generateAuthKey(): void
     {
-        return $this->authKey === $authKey;
+        $this->auth_key = Yii::$app->security->generateRandomString();
     }
 
     /**
-     * Validates password
-     *
-     * @param string $password password to validate
-     * @return bool if password provided is valid for current user
+     * @throws Exception
      */
-    public function validatePassword($password)
+    public function setPassword(string $password): void
     {
-        return $this->password === $password;
+        $this->password_hash = Yii::$app->security->generatePasswordHash($password);
     }
+
+    public function getTokens(): ActiveQuery
+    {
+        return $this->hasMany(Token::class, ['userId' => 'id']);
+    }
+
 }
