@@ -16,6 +16,7 @@ class User extends UserModel
     /**
      * @OA\Property(property="id", type="string", format="uuid", description="ID пользователя")
      * @OA\Property(property="username", type="string", description="Логин пользователя")
+     * @OA\Property(property="name", type="string", description="Имя пользователя")
      * @OA\Property(property="email", type="string", description="Email пользователя")
      * @OA\Property(property="status", type="string", description="Статус пользователя")
      * @OA\Property(property="createdAt", type="string", description="Дата создания")
@@ -25,6 +26,7 @@ class User extends UserModel
     {
         return [
             'id',
+            'name',
             'username',
             'email',
             'status',

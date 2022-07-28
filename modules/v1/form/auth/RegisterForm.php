@@ -21,6 +21,15 @@ class RegisterForm extends Model
 
     /**
      * @OA\Property(
+     *     property="name",
+     *     type="string",
+     *     description="Имя  пользователя",
+     * )
+     */
+    public string $name;
+
+    /**
+     * @OA\Property(
      *     property="username",
      *     type="string",
      *     description="Логин пользователя",
@@ -59,7 +68,7 @@ class RegisterForm extends Model
     public function rules(): array
     {
         return [
-            [['username', 'password', 'email', ], 'required',],
+            [['username', 'password', 'email', 'name', ], 'required',],
             [['username', 'password', 'email',], 'string', 'max' => 255,],
             [
                 ['username', 'email', 'password', 'passwordRepeat',],
@@ -80,6 +89,7 @@ class RegisterForm extends Model
     public function attributeLabels(): array
     {
         return [
+            'name' => 'Имя',
             'username' => 'Логин',
             'password' => 'Пароль',
             'passwordRepeat' => 'Повтор пароля',
@@ -93,7 +103,7 @@ class RegisterForm extends Model
         try {
             $user = new User(
                 ArrayHelper::merge(
-                    $this->getAttributes(['username', 'email',]),
+                    $this->getAttributes(['username', 'email', 'name',]),
                     [
                         'status' => UserAlias::NOT_ACTIVE,
                         'verification_token' => Yii::$app->security->generateRandomString()

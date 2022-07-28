@@ -21,7 +21,6 @@ class m210721_141938_create_roles_table extends Migration
             $auth->add($role);
             $auth->addChild($roleSuperAdmin, $role);
             echo 'Create role ROLE_MODERATOR'. PHP_EOL;
-            echo 'Create role ROLE_ORG_USER'. PHP_EOL;
             $role = $auth->createRole(CollectionRolls::ROLE_USER);
             $auth->add($role);
             $auth->addChild($roleSuperAdmin, $role);

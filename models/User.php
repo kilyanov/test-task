@@ -18,6 +18,7 @@ use yii\web\IdentityInterface;
  *
  * @property string $id
  * @property string $username Логин
+ * @property string $name Имя
  * @property string $auth_key Ключ
  * @property string $password_hash Пароль
  * @property string|null $password_reset_token Токен для сброса пароля
@@ -43,9 +44,9 @@ class User extends Model implements IdentityInterface
     public function rules(): array
     {
         return [
-            [['username', 'password_hash', 'email',], 'required'],
+            [['username', 'password_hash', 'email', 'name'], 'required'],
             [['createdAt', 'updatedAt', 'deletedAt'], 'safe'],
-            [['username', 'password_hash', 'password_reset_token', 'email', 'verification_token', 'status', ], 'string', 'max' => 255],
+            [['username', 'password_hash', 'password_reset_token', 'email', 'verification_token', 'status', 'name', ], 'string', 'max' => 255],
             [['auth_key'], 'string', 'max' => 32],
             [['username'], 'unique'],
             [['email'], 'unique'],
@@ -57,6 +58,7 @@ class User extends Model implements IdentityInterface
         return [
             'id' => 'ID',
             'username' => 'Логин',
+            'name' => 'Имя',
             'auth_key' => 'Ключ',
             'password_hash' => 'Пароль',
             'password_reset_token' => 'Токен для сброса пароля',

@@ -59,7 +59,6 @@ class CategoryUserController extends BaseApiController
                 'class' => Delete::class,
                 'modelClass' => $this->modelClass
             ],
-
         ];
     }
 }

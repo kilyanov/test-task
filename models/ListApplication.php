@@ -29,7 +29,7 @@ class ListApplication extends Model
     public const RESOLVED = 'resolved';
     public const ACTIVE = 'active';
 
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%list_application}}';
     }
@@ -37,7 +37,7 @@ class ListApplication extends Model
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['name', 'email', 'message', ], 'required'],

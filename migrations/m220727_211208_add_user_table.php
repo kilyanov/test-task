@@ -19,19 +19,28 @@ class m220727_211208_add_user_table extends Migration
 
     private array $_listUser = [
         [
+            'name' => 'user1',
             'username' => 'user1',
             'email' => 'user1@ya.ru',
             'role' => CollectionRolls::ROLE_ADMIN,
         ],
         [
+            'name' => 'user2',
             'username' => 'user2',
             'email' => 'user2@ya.ru',
             'role' => CollectionRolls::ROLE_MODERATOR,
         ],
         [
+            'name' => 'user3',
             'username' => 'user3',
             'email' => 'user3@ya.ru',
             'role' => CollectionRolls::ROLE_MODERATOR,
+        ],
+        [
+            'name' => 'user4',
+            'username' => 'user4',
+            'email' => 'user4@ya.ru',
+            'role' => CollectionRolls::ROLE_USER,
         ],
     ];
 
@@ -68,7 +77,8 @@ class m220727_211208_add_user_table extends Migration
     {
         $command = static::getDb()->createCommand();
         $command->delete($this->table, 'id is not null');
-
+        $auth = Yii::$app->authManager;
+        $auth->removeAllAssignments();
         return $command->execute();
     }
 
